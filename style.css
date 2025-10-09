@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+:root {
+    --bg-color-light: #f0f0f0;
+    --text-color-light: #333;
+    --header-bg-light: #fff;
+    --border-color-light: #ddd;
+
+    --bg-color-dark: #2c2c2c;
+    --text-color-dark: #f0f0f0;
+    --header-bg-dark: #383838;
+    --border-color-dark: #555;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    background-color: var(--bg-color-light);
+    color: var(--text-color-light);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-mode {
+    background-color: var(--bg-color-dark);
+    color: var(--text-color-dark);
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: var(--header-bg-light);
+    border-bottom: 1px solid var(--border-color-light);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+body.dark-mode header {
+    background-color: var(--header-bg-dark);
+    border-bottom-color: var(--border-color-dark);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.controls button {
+    margin-left: 1rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color-light);
+    border-radius: 5px;
+    background-color: transparent;
+    color: var(--text-color-light);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+body.dark-mode .controls button {
+    color: var(--text-color-dark);
+    border-color: var(--border-color-dark);
+}
+
+.controls button:hover {
+    background-color: var(--bg-color-light);
+    border-color: #aaa;
+}
+
+body.dark-mode .controls button:hover {
+    background-color: var(--bg-color-dark);
+    border-color: #777;
+}
+
+main#content {
+    padding: 2rem;
+    line-height: 1.6;
+}
+
+main#content h1, main#content h2, main#content h3 {
+    border-bottom: 1px solid var(--border-color-light);
+    padding-bottom: 0.3em;
+}
+
+body.dark-mode main#content h1, 
+body.dark-mode main#content h2, 
+body.dark-mode main#content h3 {
+    border-bottom-color: var(--border-color-dark);
+}
+
+main#content code {
+    background-color: #e0e0e0;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+}
+
+body.dark-mode main#content code {
+    background-color: #444;
+}
+
+main#content pre {
+    background-color: #e0e0e0;
+    padding: 1em;
+    border-radius: 5px;
+    overflow-x: auto;
+}
+
+body.dark-mode main#content pre {
+    background-color: #444;
+}
