@@ -2,8 +2,8 @@
 
 Um leitor de arquivos Markdown (.md) e texto (.txt) simples, fofo e funcional, criado com Electron e muito carinho! (´｡• ᵕ •｡`) ♡
 
-![Screenshot do App](https://i.imgur.com/YOUR_SCREENSHOT_URL.png)  
-*(Você pode tirar um print do seu app e substituir o link acima!)*
+<img width="778" height="441" alt="image" src="https://github.com/user-attachments/assets/3a16405d-a5ff-4082-a366-8327351c1833" />
+
 
 ---
 
