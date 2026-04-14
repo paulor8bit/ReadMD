@@ -3,11 +3,12 @@ const tabContainer = document.getElementById('tab-container');
 const tabBar = document.getElementById('tab-bar');
 const openFolderBtn = document.getElementById('open-folder-btn');
 const fileListContainer = document.getElementById('file-list-container');
-const currentFolderPathEl = document.getElementById('current-folder-path');
 const contextMenu = document.getElementById('context-menu');
 
 let activeTabId = 'main-tab';
 let selectedFile = null;
+let rootFolders = []; // Armazena as árvores de pastas do workspace
+let activeFilePath = null; // Caminho do arquivo sendo visualizado/editado
 
 // --- Modo Escuro ---
 darkModeBtn.addEventListener('click', () => {
@@ -15,34 +16,43 @@ darkModeBtn.addEventListener('click', () => {
     darkModeBtn.textContent = document.body.classList.contains('dark-mode') ? 'Modo Claro ☀️' : 'Modo Escuro 🌙';
 });
 
-// --- Gerenciamento de Pastas (Árvore) ---
+// --- Gerenciamento de Workspace (Múltiplas Pastas) ---
 openFolderBtn.addEventListener('click', async () => {
     const folderPath = await window.electronAPI.openFolder();
     if (folderPath) {
-        currentFolderPathEl.textContent = folderPath;
+        if (rootFolders.some(f => f.path === folderPath)) return;
         const tree = await window.electronAPI.readDirectory(folderPath);
-        renderFileTree(tree);
+        if (tree) {
+            rootFolders.push(tree);
+            renderWorkspace();
+        }
     }
 });
 
-function renderFileTree(tree) {
+function renderWorkspace() {
     fileListContainer.innerHTML = '';
-    if (!tree) {
-        fileListContainer.innerHTML = '<p>Erro ao ler a pasta. (T-T)</p>';
+    if (rootFolders.length === 0) {
+        fileListContainer.innerHTML = '<p>Selecione uma pasta para listar os arquivos .md e .txt! (´｡• ᵕ •｡`) ♡</p>';
         return;
     }
     
-    // O nó raiz é a própria pasta selecionada
-    const rootElement = createTreeElement(tree);
-    fileListContainer.appendChild(rootElement);
+    rootFolders.forEach((tree, index) => {
+        const rootElement = createTreeElement(tree, true, index);
+        fileListContainer.appendChild(rootElement);
+    });
+
+    if (activeFilePath) {
+        highlightActiveFileInTree(activeFilePath);
+    }
 }
 
-function createTreeElement(node) {
+function createTreeElement(node, isRoot = false, index = -1) {
     const container = document.createElement('div');
     container.className = 'tree-node';
 
     const item = document.createElement('div');
     item.className = 'file-item';
+    item.setAttribute('data-path', node.path);
     
     let icon = '📄';
     if (node.isDirectory) icon = '📁';
@@ -50,11 +60,26 @@ function createTreeElement(node) {
 
     const toggleHtml = node.isDirectory ? '<span class="folder-toggle">▼</span>' : '<span style="width:15px; display:inline-block;"></span>';
     
+    let removeBtnHtml = '';
+    if (isRoot) {
+        removeBtnHtml = `<span class="remove-folder-btn" title="Remover do Workspace">✖</span>`;
+    }
+
     item.innerHTML = `
         ${toggleHtml}
         <span class="file-icon">${icon}</span>
         <span class="file-name">${node.name}</span>
+        ${removeBtnHtml}
     `;
+
+    // Lógica para remover pasta do workspace
+    if (isRoot) {
+        item.querySelector('.remove-folder-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            rootFolders.splice(index, 1);
+            renderWorkspace();
+        });
+    }
 
     if (node.isDirectory) {
         const childrenContainer = document.createElement('div');
@@ -65,7 +90,8 @@ function createTreeElement(node) {
         });
 
         item.addEventListener('click', (e) => {
-            if (e.target.closest('.folder-toggle') || e.target === item) {
+            if (e.target.closest('.folder-toggle') || e.target.closest('.file-name') || e.target === item || e.target.closest('.file-icon')) {
+                if (e.target.closest('.remove-folder-btn')) return;
                 const toggle = item.querySelector('.folder-toggle');
                 toggle.classList.toggle('collapsed');
                 childrenContainer.classList.toggle('hidden');
@@ -75,7 +101,6 @@ function createTreeElement(node) {
         container.appendChild(item);
         container.appendChild(childrenContainer);
     } else {
-        // Arquivo
         item.addEventListener('dblclick', () => {
             openTab(node.path, node.name, 'view');
         });
@@ -91,6 +116,15 @@ function createTreeElement(node) {
     }
 
     return container;
+}
+
+function highlightActiveFileInTree(path) {
+    document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active-in-tree'));
+    const activeEl = document.querySelector(`.file-item[data-path="${path.replace(/\\/g, '\\\\')}"]`);
+    if (activeEl) {
+        activeEl.classList.add('active-in-tree');
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 }
 
 // --- Menu de Contexto ---
@@ -131,6 +165,7 @@ function openTab(filePath, fileName, mode) {
     const tab = document.createElement('div');
     tab.className = 'tab';
     tab.setAttribute('data-tab-id', tabId);
+    tab.setAttribute('data-file-path', filePath || '');
     tab.innerHTML = `
         <span>${fileName}</span>
         <span class="close-tab">✖</span>
@@ -179,15 +214,11 @@ async function loadTabContent(container, filePath, mode) {
                     const tabId = container.id;
                     const tab = document.querySelector(`[data-tab-id="${tabId}"]`);
                     tab.querySelector('span').textContent = result.name;
+                    tab.setAttribute('data-file-path', result.filePath);
                     filePath = result.filePath;
                 }
                 alert('Arquivo salvo com sucesso! ( ^▽^ )');
-                
-                // Recarrega a árvore para mostrar o novo arquivo
-                if (currentFolderPathEl.textContent) {
-                    const tree = await window.electronAPI.readDirectory(currentFolderPathEl.textContent);
-                    renderFileTree(tree);
-                }
+                refreshWorkspace();
             }
         });
 
@@ -196,6 +227,16 @@ async function loadTabContent(container, filePath, mode) {
         editorContainer.appendChild(actions);
         container.appendChild(editorContainer);
     }
+}
+
+async function refreshWorkspace() {
+    const newRootFolders = [];
+    for (const folder of rootFolders) {
+        const tree = await window.electronAPI.readDirectory(folder.path);
+        if (tree) newRootFolders.push(tree);
+    }
+    rootFolders = newRootFolders;
+    renderWorkspace();
 }
 
 function switchTab(tabId) {
@@ -209,6 +250,12 @@ function switchTab(tabId) {
         tab.classList.add('active');
         content.classList.add('active');
         activeTabId = tabId;
+
+        if (tabId === 'main-tab') {
+            if (activeFilePath) highlightActiveFileInTree(activeFilePath);
+        } else {
+            activeFilePath = tab.getAttribute('data-file-path');
+        }
     }
 }
 

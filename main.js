@@ -59,8 +59,16 @@ ipcMain.handle('open-folder-dialog', async () => {
 
 function getFileTree(dir) {
   const stats = fs.statSync(dir);
+  const name = path.basename(dir);
+  
+  // Pastas que "o normal" é ignorar no workspace
+  const ignoredFolders = ['node_modules', '.git', 'dist', '.gemini'];
+  if (stats.isDirectory() && ignoredFolders.includes(name)) {
+    return null;
+  }
+
   const info = {
-    name: path.basename(dir),
+    name: name,
     path: dir,
     isDirectory: stats.isDirectory()
   };
@@ -68,6 +76,7 @@ function getFileTree(dir) {
   if (stats.isDirectory()) {
     info.children = fs.readdirSync(dir)
       .map(child => getFileTree(path.join(dir, child)))
+      .filter(child => child !== null) // Remove os ignorados
       .filter(child => child.isDirectory || child.name.endsWith('.md') || child.name.endsWith('.txt'))
       .sort((a, b) => {
         if (a.isDirectory && !b.isDirectory) return -1;

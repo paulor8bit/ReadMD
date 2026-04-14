@@ -161,6 +161,7 @@ body.dark-mode .file-list {
 
 .tree-node {
     margin-left: 1rem;
+    padding-top: 0.2rem;
 }
 
 .file-item {
@@ -169,12 +170,23 @@ body.dark-mode .file-list {
     border-radius: 5px;
     text-align: left;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, color 0.2s;
     word-break: break-all;
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 0.95rem;
+}
+
+.file-item.active-in-tree {
+    background-color: var(--tab-inactive-light);
+    color: var(--accent-color);
+    font-weight: bold;
+    border-left: 3px solid var(--accent-color);
+}
+
+body.dark-mode .file-item.active-in-tree {
+    background-color: var(--tab-inactive-dark);
 }
 
 .file-item:hover {
@@ -293,4 +305,26 @@ body.dark-mode .context-menu li:hover {
 body.dark-mode .markdown-view code, 
 body.dark-mode .markdown-view pre {
     background-color: #4a3438;
+}
+
+.file-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.remove-folder-btn {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: #ff6b8b;
+    opacity: 0.4;
+    transition: opacity 0.2s, transform 0.2s;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.remove-folder-btn:hover {
+    opacity: 1;
+    transform: scale(1.3);
 }
