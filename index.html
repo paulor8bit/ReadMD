@@ -3,21 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leitor de Markdown Kawaii</title>
+    <title>ReadMD Kawaii 🎀</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <header>
-        <h1>Leitor de Markdown 📖</h1>
-        <div class="controls">
-            <button id="open-file-btn">Abrir Arquivo</button>
-            <button id="dark-mode-btn">Modo Escuro</button>
+        <div class="header-top">
+            <h1>ReadMD 📖✨</h1>
+            <div class="controls">
+                <button id="dark-mode-btn">Modo Escuro 🌙</button>
+            </div>
+        </div>
+        <div id="tab-bar" class="tab-bar">
+            <div class="tab active" data-tab-id="main-tab">Início 🏠</div>
         </div>
     </header>
-    <main id="content">
-        <p>Selecione um arquivo .md ou .txt para começar! (´｡• ᵕ •｡`) ♡</p>
+
+    <main id="tab-container">
+        <!-- Aba Principal -->
+        <div id="main-tab" class="tab-content active">
+            <div class="folder-selection">
+                <button id="open-folder-btn">Escolher Pasta 📂</button>
+                <p id="current-folder-path"></p>
+            </div>
+            <div id="file-list-container" class="file-list">
+                <p>Selecione uma pasta para listar os arquivos .md e .txt! (´｡• ᵕ •｡`) ♡</p>
+            </div>
+        </div>
     </main>
+
+    <!-- Menu de Contexto Customizado -->
+    <div id="context-menu" class="context-menu" style="display: none;">
+        <ul>
+            <li id="menu-open">Abrir 👁️</li>
+            <li id="menu-edit">Editar 📝</li>
+            <li id="menu-new">Novo ✨</li>
+        </ul>
+    </div>
+
     <script src="./renderer.js"></script>
 </body>
 </html>
